@@ -80,6 +80,7 @@ export interface ConcessionItem {
 
 export interface Theater {
   id: string;
+  sortOrder: number;
   slug: string;
   name: string;
   city: string;

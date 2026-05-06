@@ -16,6 +16,26 @@ import { getAmplifyStoragePathFromUrl } from "@/lib/amplify/storage";
 
 const client = generateClient<Schema>({ config: amplifyConfig });
 
+const adminTheaterSelection = [
+  "id",
+  "slug",
+  "name",
+  "city",
+  "state",
+  "district",
+  "established",
+  "status",
+  "address",
+  "phone",
+  "contactEmail",
+  "manager",
+  "notes",
+  "heroImage",
+  "descriptionParagraphs",
+  "createdAt",
+  "updatedAt",
+] as const;
+
 function getEventModel() {
   const eventModel = (client.models as Record<string, unknown>).Event;
 
@@ -46,6 +66,7 @@ export async function listTheatersFromAmplify() {
     client.models.Theater.list(contextSpec, {
       authMode: "userPool",
       sortDirection: "ASC",
+      selectionSet: adminTheaterSelection,
     })
   );
 }
@@ -59,7 +80,14 @@ export async function getTheaterFromAmplify(theaterId: string) {
   }
 
   return runWithAuthServerContext((contextSpec) =>
-    client.models.Theater.get(contextSpec, { id: theaterId }, { authMode: "userPool" })
+    client.models.Theater.get(
+      contextSpec,
+      { id: theaterId },
+      {
+        authMode: "userPool",
+        selectionSet: adminTheaterSelection,
+      }
+    )
   );
 }
 

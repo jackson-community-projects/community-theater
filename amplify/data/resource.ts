@@ -38,6 +38,7 @@ const schema = a.schema({
 
   Theater: a
     .model({
+      sortOrder: a.integer(),
       slug: a.string().required(),
       name: a.string().required(),
       city: a.string().required(),

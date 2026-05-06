@@ -4,6 +4,7 @@ import { CONCESSION_ITEM_PLACEHOLDER_IMAGE } from "@/lib/concessions";
 export const theaters: Theater[] = [
   {
     id: "jackson",
+    sortOrder: 1,
     slug: "jackson-theater",
     name: "Jackson Theater",
     city: "Jackson",
@@ -53,6 +54,7 @@ export const theaters: Theater[] = [
   },
   {
     id: "sherburn",
+    sortOrder: 2,
     slug: "sherburn-theater",
     name: "Sherburn Theater",
     city: "Sherburn",

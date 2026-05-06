@@ -57,8 +57,10 @@ export function NewTheaterForm() {
             void (async () => {
               const client = getAmplifyClient();
               const established = getString(formData, "established");
+              const sortOrder = getString(formData, "sortOrder");
               const response = await client.models.Theater.create(
                 {
+                  sortOrder: sortOrder ? Number.parseInt(sortOrder, 10) : null,
                   slug: getString(formData, "slug"),
                   name: getString(formData, "name"),
                   city: getString(formData, "city"),
@@ -111,6 +113,12 @@ export function NewTheaterForm() {
             </AdminField>
             <AdminField label="State">
               <AdminInput name="state" placeholder="MN" required />
+            </AdminField>
+            <AdminField
+              label="Sort Order"
+              description="Lower numbers appear first in navigation and theater lists."
+            >
+              <AdminInput name="sortOrder" type="number" min="1" defaultValue="1" />
             </AdminField>
             <AdminField label="District">
               <AdminInput name="district" placeholder="Main Street" required />

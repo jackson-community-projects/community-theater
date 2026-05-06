@@ -81,6 +81,11 @@ function toAdminMovieStatus(
   }
 }
 
+function getOptionalTheaterSortOrder(theater: unknown) {
+  const value = (theater as { sortOrder?: unknown }).sortOrder;
+  return typeof value === "number" ? value : null;
+}
+
 function isFutureReleaseDate(releaseDate?: string | null) {
   if (!releaseDate) {
     return false;
@@ -315,6 +320,10 @@ async function toAdminTheater(
 
   return {
     id: theater.id,
+    sortOrder:
+      getOptionalTheaterSortOrder(theater) ??
+      fallback?.sortOrder ??
+      Number.MAX_SAFE_INTEGER,
     slug: theater.slug,
     name: theater.name,
     city: theater.city,
@@ -460,7 +469,11 @@ export async function getAdminTheaters() {
     );
   }
 
-  return Promise.all(result.data.map(toAdminTheater));
+  return (await Promise.all(result.data.map(toAdminTheater))).sort((left, right) =>
+    left.sortOrder === right.sortOrder
+      ? left.name.localeCompare(right.name)
+      : left.sortOrder - right.sortOrder
+  );
 }
 
 export async function getAdminTheater(theaterId: string) {

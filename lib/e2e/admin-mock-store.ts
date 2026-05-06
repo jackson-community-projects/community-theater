@@ -63,6 +63,7 @@ function createDefaultDb(): MockDb {
     theaters: [
       {
         id: "theater-seed",
+        sortOrder: 1,
         slug: "seed-theater",
         name: "Seed Theater",
         city: "Fairmont",

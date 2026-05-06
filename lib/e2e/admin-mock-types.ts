@@ -1,5 +1,6 @@
 export type MockTheaterRecord = {
   id: string;
+  sortOrder?: number | null;
   slug: string;
   name: string;
   city: string;

@@ -83,6 +83,21 @@ type PublicAmplifyVenueItemAvailability = Awaited<
   ReturnType<typeof listPublicVenueItemAvailabilityFromAmplify>
 >["data"][number];
 
+function sortTheatersByOrder<TheaterRecord extends { sortOrder: number; name: string }>(
+  theaters: TheaterRecord[]
+) {
+  return [...theaters].sort((left, right) =>
+    left.sortOrder === right.sortOrder
+      ? left.name.localeCompare(right.name)
+      : left.sortOrder - right.sortOrder
+  );
+}
+
+function getOptionalTheaterSortOrder(theater: unknown) {
+  const value = (theater as { sortOrder?: unknown }).sortOrder;
+  return typeof value === "number" ? value : null;
+}
+
 function formatConcessionPrice(value: number) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -179,6 +194,10 @@ async function toSiteTheater(theater: PublicAmplifyTheater): Promise<Theater> {
 
   return {
     id: theater.id,
+    sortOrder:
+      getOptionalTheaterSortOrder(theater) ??
+      fallback?.sortOrder ??
+      Number.MAX_SAFE_INTEGER,
     slug: theater.slug,
     name: theater.name,
     city: theater.city,
@@ -218,7 +237,7 @@ async function getPublicTheatersFromAmplify(): Promise<Theater[]> {
     );
   }
 
-  return Promise.all(result.data.map(toSiteTheater));
+  return sortTheatersByOrder(await Promise.all(result.data.map(toSiteTheater)));
 }
 
 async function getPublicTheaterByRouteKey(routeKey: string): Promise<Theater | null> {
