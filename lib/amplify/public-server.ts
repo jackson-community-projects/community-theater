@@ -1,6 +1,5 @@
 import { generateClient } from "aws-amplify/data/server";
 import { getUrl } from "aws-amplify/storage/server";
-import { runWithAmplifyServerContext } from "aws-amplify/adapter-core";
 
 import type { Schema } from "@/amplify/data/resource";
 import { amplifyConfig } from "@/lib/amplify/runtime-config";
@@ -186,9 +185,9 @@ export async function listPublicTheatersFromAmplify() {
     };
   }
 
-  return runWithAmplifyServerContext(amplifyConfig, {}, (contextSpec) =>
+  return runWithGuestServerContext((contextSpec) =>
     client.models.Theater.list(contextSpec, {
-      authMode: "apiKey",
+      authMode: "identityPool",
       sortDirection: "ASC",
       selectionSet: publicTheaterSelection,
     })
@@ -206,12 +205,12 @@ export async function listPublicScreensFromAmplify(theaterId: string) {
     };
   }
 
-  return runWithAmplifyServerContext(amplifyConfig, {}, (contextSpec) =>
+  return runWithGuestServerContext((contextSpec) =>
     client.models.Screen.listScreensByTheater(
       contextSpec,
       { theaterId },
       {
-        authMode: "apiKey",
+        authMode: "identityPool",
         selectionSet: publicScreenSelection,
       }
     )
@@ -226,9 +225,9 @@ export async function listPublicMoviesFromAmplify() {
     };
   }
 
-  return runWithAmplifyServerContext(amplifyConfig, {}, (contextSpec) =>
+  return runWithGuestServerContext((contextSpec) =>
     client.models.Movie.list(contextSpec, {
-      authMode: "apiKey",
+      authMode: "identityPool",
       sortDirection: "DESC",
       selectionSet: publicMovieSelection,
     })
@@ -243,9 +242,9 @@ export async function listPublicBookingsFromAmplify() {
     };
   }
 
-  return runWithAmplifyServerContext(amplifyConfig, {}, (contextSpec) =>
+  return runWithGuestServerContext((contextSpec) =>
     client.models.Booking.list(contextSpec, {
-      authMode: "apiKey",
+      authMode: "identityPool",
       sortDirection: "ASC",
       selectionSet: publicBookingSelection,
     })
@@ -262,9 +261,9 @@ export async function listPublicEventsFromAmplify() {
 
   const eventModel = getPublicEventModel();
 
-  return runWithAmplifyServerContext(amplifyConfig, {}, (contextSpec) =>
+  return runWithGuestServerContext((contextSpec) =>
     eventModel.list(contextSpec, {
-      authMode: "apiKey",
+      authMode: "identityPool",
       sortDirection: "ASC",
       selectionSet: publicEventSelection,
     })
@@ -284,9 +283,9 @@ export async function listPublicVenueItemsFromAmplify() {
 
   const venueItemModel = getPublicVenueItemModel();
 
-  return runWithAmplifyServerContext(amplifyConfig, {}, (contextSpec) =>
+  return runWithGuestServerContext((contextSpec) =>
     venueItemModel.list(contextSpec, {
-      authMode: "apiKey",
+      authMode: "identityPool",
       sortDirection: "ASC",
       selectionSet: publicVenueItemSelection,
     })
@@ -308,9 +307,9 @@ export async function listPublicVenueItemAvailabilityFromAmplify() {
 
   const availabilityModel = getPublicVenueItemAvailabilityModel();
 
-  return runWithAmplifyServerContext(amplifyConfig, {}, (contextSpec) =>
+  return runWithGuestServerContext((contextSpec) =>
     availabilityModel.list(contextSpec, {
-      authMode: "apiKey",
+      authMode: "identityPool",
       sortDirection: "ASC",
       selectionSet: publicVenueItemAvailabilitySelection,
     })

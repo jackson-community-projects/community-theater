@@ -64,6 +64,7 @@ const schema = a.schema({
     ])
     .authorization((allow) => [
       allow.group('ADMINS'),
+      allow.guest().to(['read']),
       allow.publicApiKey().to(['read', 'create']),
     ]),
 
@@ -86,6 +87,7 @@ const schema = a.schema({
     ])
     .authorization((allow) => [
       allow.group('ADMINS'),
+      allow.guest().to(['read']),
       allow.publicApiKey().to(['read']),
     ]),
 
@@ -121,6 +123,7 @@ const schema = a.schema({
     ])
     .authorization((allow) => [
       allow.group('ADMINS'),
+      allow.guest().to(['read']),
       allow.publicApiKey().to(['read']),
     ]),
 
@@ -160,6 +163,7 @@ const schema = a.schema({
       allow.group('ADMINS'),
       // Native public reads keep the public site simple; the UI should filter to
       // published records until a dedicated public projection is added.
+      allow.guest().to(['read']),
       allow.publicApiKey().to(['read']),
     ]),
 
@@ -183,6 +187,7 @@ const schema = a.schema({
     ])
     .authorization((allow) => [
       allow.group('ADMINS'),
+      allow.guest().to(['read']),
       allow.publicApiKey().to(['read']),
     ]),
 
@@ -211,6 +216,7 @@ const schema = a.schema({
     ])
     .authorization((allow) => [
       allow.group('ADMINS'),
+      allow.guest().to(['read']),
       allow.publicApiKey().to(['read', 'create', 'update', 'delete']),
     ]),
 
@@ -231,6 +237,7 @@ const schema = a.schema({
     ])
     .authorization((allow) => [
       allow.group('ADMINS'),
+      allow.guest().to(['read']),
       allow.publicApiKey().to(['read', 'create', 'update', 'delete']),
     ]),
 });
