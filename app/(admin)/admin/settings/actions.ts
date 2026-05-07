@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 
 import { deleteStaffUser, getStaffSession, listStaffUsers, updateStaffOwnerStatus } from "@/lib/auth/server";
 import { createStaffInviteUrl } from "@/lib/auth/staff-invite";
+import { getStaffSignupSecret } from "@/lib/auth/staff-invite-server";
 import { APP_NAME } from "@/lib/config";
 
 export type StaffInviteActionState = {
@@ -45,7 +46,9 @@ export async function createStaffInviteFromSettingsAction(
     };
   }
 
-  if (!process.env.STAFF_SIGNUP_SECRET) {
+  const signupSecret = getStaffSignupSecret();
+
+  if (!signupSecret) {
     return {
       email,
       expiresInHours,
@@ -90,7 +93,7 @@ export async function createStaffInviteFromSettingsAction(
       expiresAt,
       role: "staff",
     },
-    secret: process.env.STAFF_SIGNUP_SECRET,
+    secret: signupSecret,
   });
 
   const subject = encodeURIComponent(`Your ${APP_NAME} staff invite`);
