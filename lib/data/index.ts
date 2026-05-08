@@ -278,6 +278,14 @@ function isFutureMovieReleaseDate(releaseDate?: string) {
   return releaseDate > getTodayIsoDate();
 }
 
+function isComingSoonMovie(movie: Movie) {
+  return (
+    movie.status === "coming-soon" ||
+    !movie.releaseDate ||
+    isFutureMovieReleaseDate(movie.releaseDate)
+  );
+}
+
 function isActivePublishedBooking(booking: Booking, todayIso = getTodayIsoDate()) {
   return (
     booking.status === "published" &&
@@ -632,7 +640,7 @@ export async function getNowPlayingMovies(): Promise<Movie[]> {
 
 export async function getComingSoonMovies(): Promise<Movie[]> {
   const publicMovies = await getPublicMoviesFromAmplify();
-  return publicMovies.filter((movie) => isFutureMovieReleaseDate(movie.releaseDate));
+  return publicMovies.filter(isComingSoonMovie);
 }
 
 export async function getMovieDetail(slug: string): Promise<Movie | null> {
