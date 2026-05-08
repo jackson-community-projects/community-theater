@@ -18,6 +18,36 @@ import {
 import { Button } from "@/components/ui/button";
 import { AdminSubmitButton } from "@/components/admin/admin-submit-button";
 
+function formatDateInputValue(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function getDefaultRunWindow(today = new Date()) {
+  const baseDate = new Date(today);
+  baseDate.setHours(12, 0, 0, 0);
+
+  const dayOfWeek = baseDate.getDay();
+  const daysUntilFriday = (5 - dayOfWeek + 7) % 7;
+  const daysSinceFriday = (dayOfWeek - 5 + 7) % 7;
+  const startOffset =
+    dayOfWeek >= 5 ? -daysSinceFriday : daysUntilFriday;
+
+  const runStartsOn = new Date(baseDate);
+  runStartsOn.setDate(baseDate.getDate() + startOffset);
+
+  const runEndsOn = new Date(runStartsOn);
+  runEndsOn.setDate(runStartsOn.getDate() + 2);
+
+  return {
+    runStartsOn: formatDateInputValue(runStartsOn),
+    runEndsOn: formatDateInputValue(runEndsOn),
+  };
+}
+
 export function AdminBookingForm({
   theaters,
   screens,
@@ -58,6 +88,7 @@ export function AdminBookingForm({
         ? defaultMovieId
         : movies[0]?.id ?? "";
   const isHydrated = useHydratedFlag();
+  const defaultRunWindow = useMemo(() => getDefaultRunWindow(), []);
 
   const formSections = (
     <>
@@ -139,14 +170,14 @@ export function AdminBookingForm({
             <AdminInput
               name="runStartsOn"
               type="date"
-              defaultValue={booking?.runStartsOn ?? "2026-04-18"}
+              defaultValue={booking?.runStartsOn ?? defaultRunWindow.runStartsOn}
             />
           </AdminField>
           <AdminField label="Run End Date">
             <AdminInput
               name="runEndsOn"
               type="date"
-              defaultValue={booking?.runEndsOn ?? "2026-04-27"}
+              defaultValue={booking?.runEndsOn ?? defaultRunWindow.runEndsOn}
             />
           </AdminField>
           <AdminField label="Ticket Price">

@@ -184,6 +184,35 @@ test("imports, edits, and deletes a movie", async ({ page }) => {
 test("imports a movie and creates, edits, and deletes a booking", async ({
   page,
 }) => {
+  const expectedRunWindow = await page.evaluate(() => {
+    const formatDateInputValue = (date: Date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+
+      return `${year}-${month}-${day}`;
+    };
+
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+
+    const dayOfWeek = today.getDay();
+    const daysUntilFriday = (5 - dayOfWeek + 7) % 7;
+    const daysSinceFriday = (dayOfWeek - 5 + 7) % 7;
+    const startOffset = dayOfWeek >= 5 ? -daysSinceFriday : daysUntilFriday;
+
+    const runStartsOn = new Date(today);
+    runStartsOn.setDate(today.getDate() + startOffset);
+
+    const runEndsOn = new Date(runStartsOn);
+    runEndsOn.setDate(runStartsOn.getDate() + 2);
+
+    return {
+      runStartsOn: formatDateInputValue(runStartsOn),
+      runEndsOn: formatDateInputValue(runEndsOn),
+    };
+  });
+
   await page.goto("/admin/movies/new?query=mario");
   await expect(page.locator('[data-e2e-ready="true"]')).toBeVisible();
 
@@ -197,6 +226,12 @@ test("imports a movie and creates, edits, and deletes a booking", async ({
 
   await page.getByRole("link", { name: "Create Booking" }).click();
   await expect(page.locator('[data-e2e-ready="true"]')).toBeVisible();
+  await expect(page.locator('input[name="runStartsOn"]')).toHaveValue(
+    expectedRunWindow.runStartsOn
+  );
+  await expect(page.locator('input[name="runEndsOn"]')).toHaveValue(
+    expectedRunWindow.runEndsOn
+  );
   await page.locator('input[name="runStartsOn"]').fill("2026-06-01");
   await page.locator('input[name="runEndsOn"]').fill("2026-06-07");
   await page.locator('input[name="badge"]').fill("Family Week");
