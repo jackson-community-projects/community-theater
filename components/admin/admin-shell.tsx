@@ -5,6 +5,7 @@ import { Suspense, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  ArrowLeft,
   Bell,
   Building2,
   CalendarDays,
@@ -26,6 +27,7 @@ import { APP_NAME } from "@/lib/config";
 import { cn } from "@/lib/utils";
 
 const navItems = [
+  { href: "/", label: "Back to website", icon: ArrowLeft },
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/theaters", label: "Theaters", icon: Building2 },
   { href: "/admin/movies", label: "Movies", icon: Film },
@@ -69,7 +71,9 @@ export function AdminShell({
           <div className="flex flex-1 flex-col gap-1">
             {navItems.map(({ href, label, icon: Icon }) => {
               const active =
-                href === "/admin"
+                href === "/"
+                  ? pathname === "/"
+                  : href === "/admin"
                   ? pathname === "/admin"
                   : pathname.startsWith(href);
 
@@ -149,7 +153,9 @@ export function AdminShell({
             <div className="flex gap-2 overflow-x-auto pb-1 md:hidden">
               {navItems.map(({ href, label }) => {
                 const active =
-                  href === "/admin"
+                  href === "/"
+                    ? pathname === "/"
+                    : href === "/admin"
                     ? pathname === "/admin"
                     : pathname.startsWith(href);
 
