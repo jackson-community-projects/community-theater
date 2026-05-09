@@ -33,7 +33,17 @@ export async function SiteFooter() {
             <div className="mt-6 space-y-1 text-xs font-sans leading-6 text-[#9c8f78]">
               <p>© {new Date().getFullYear()} {APP_NAME}. All Rights Reserved.</p>
               <p>Operated by {BUSINESS_NAME}.</p>
-              <p>Site by Danger Incorporated.</p>
+              <p>
+                Site by{" "}
+                <Link
+                  href="/admin/sign-in"
+                  aria-label="Staff sign in"
+                  className="transition-colors hover:text-[#c6b08a] focus-visible:text-[#c6b08a]"
+                >
+                  Danger Incorporated
+                </Link>
+                .
+              </p>
             </div>
           </div>
 
