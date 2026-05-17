@@ -16,12 +16,47 @@ function getString(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
 }
 
-function toDateTime(value: string, label: string) {
+function getOffsetMinutes(formData: FormData, key: string, label: string) {
+  const value = getString(formData, key);
+
+  if (!value) {
+    throw new Error(`${label} timezone is required.`);
+  }
+
+  const parsed = Number.parseInt(value, 10);
+
+  if (Number.isNaN(parsed)) {
+    throw new Error(`${label} timezone must be valid.`);
+  }
+
+  return parsed;
+}
+
+function toDateTime(value: string, offsetMinutes: number, label: string) {
   if (!value) {
     throw new Error(`${label} is required.`);
   }
 
-  const date = new Date(value);
+  const match = value.match(
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/
+  );
+
+  if (!match) {
+    throw new Error(`${label} must be a valid date and time.`);
+  }
+
+  const [, year, month, day, hours, minutes, seconds = "00"] = match;
+  const utcTimestamp = Date.UTC(
+    Number.parseInt(year, 10),
+    Number.parseInt(month, 10) - 1,
+    Number.parseInt(day, 10),
+    Number.parseInt(hours, 10),
+    Number.parseInt(minutes, 10),
+    Number.parseInt(seconds, 10)
+  ) + offsetMinutes * 60 * 1000;
+
+  const date = new Date(utcTimestamp);
+
   if (Number.isNaN(date.getTime())) {
     throw new Error(`${label} must be a valid date and time.`);
   }
@@ -47,8 +82,16 @@ export async function createEventAction(formData: FormData) {
   const description = getString(formData, "description");
   const image = getString(formData, "image");
   const status = getString(formData, "status");
-  const startsAt = toDateTime(getString(formData, "startsAt"), "Start time");
-  const endsAt = toDateTime(getString(formData, "endsAt"), "End time");
+  const startsAt = toDateTime(
+    getString(formData, "startsAt"),
+    getOffsetMinutes(formData, "startsAtOffsetMinutes", "Start time"),
+    "Start time"
+  );
+  const endsAt = toDateTime(
+    getString(formData, "endsAt"),
+    getOffsetMinutes(formData, "endsAtOffsetMinutes", "End time"),
+    "End time"
+  );
 
   if (!title || !slug || !theaterId || !summary) {
     throw new Error("Title, slug, theater, and summary are required.");
@@ -104,8 +147,16 @@ export async function updateEventAction(formData: FormData) {
   const description = getString(formData, "description");
   const image = getString(formData, "image");
   const status = getString(formData, "status");
-  const startsAt = toDateTime(getString(formData, "startsAt"), "Start time");
-  const endsAt = toDateTime(getString(formData, "endsAt"), "End time");
+  const startsAt = toDateTime(
+    getString(formData, "startsAt"),
+    getOffsetMinutes(formData, "startsAtOffsetMinutes", "Start time"),
+    "Start time"
+  );
+  const endsAt = toDateTime(
+    getString(formData, "endsAt"),
+    getOffsetMinutes(formData, "endsAtOffsetMinutes", "End time"),
+    "End time"
+  );
 
   if (!id || !title || !slug || !theaterId || !summary) {
     throw new Error("Missing required event fields.");

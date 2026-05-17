@@ -36,6 +36,20 @@ function toDateTimeLocalInput(value?: string) {
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
+function getDateTimeLocalOffsetMinutes(value: string) {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return String(date.getTimezoneOffset());
+}
+
 export function AdminEventForm({
   theaters,
   event,
@@ -47,6 +61,12 @@ export function AdminEventForm({
 }) {
   const initialImage = event?.image && event.image !== "/next.svg" ? event.image : "";
   const [image, setImage] = useState(initialImage);
+  const [startsAtOffset, setStartsAtOffset] = useState(
+    getDateTimeLocalOffsetMinutes(toDateTimeLocalInput(event?.startsAt))
+  );
+  const [endsAtOffset, setEndsAtOffset] = useState(
+    getDateTimeLocalOffsetMinutes(toDateTimeLocalInput(event?.endsAt))
+  );
   const theaterOptions = useMemo(() => theaters, [theaters]);
 
   const imagePreview = event?.image === image ? event.imagePreview : undefined;
@@ -56,6 +76,8 @@ export function AdminEventForm({
     <div className="grid gap-8 xl:grid-cols-[1.2fr_0.8fr]">
       <div className="flex flex-col gap-8">
         {event ? <input type="hidden" name="id" value={event.id} /> : null}
+        <input type="hidden" name="startsAtOffsetMinutes" value={startsAtOffset} />
+        <input type="hidden" name="endsAtOffsetMinutes" value={endsAtOffset} />
         <AdminSectionCard
           title="Event Details"
           description="Capture the core programming, venue, and publishing details for this community event."
@@ -102,6 +124,11 @@ export function AdminEventForm({
                 name="startsAt"
                 type="datetime-local"
                 defaultValue={toDateTimeLocalInput(event?.startsAt)}
+                onChange={(event) =>
+                  setStartsAtOffset(
+                    getDateTimeLocalOffsetMinutes(event.currentTarget.value)
+                  )
+                }
                 required
               />
             </AdminField>
@@ -110,6 +137,11 @@ export function AdminEventForm({
                 name="endsAt"
                 type="datetime-local"
                 defaultValue={toDateTimeLocalInput(event?.endsAt)}
+                onChange={(event) =>
+                  setEndsAtOffset(
+                    getDateTimeLocalOffsetMinutes(event.currentTarget.value)
+                  )
+                }
                 required
               />
             </AdminField>

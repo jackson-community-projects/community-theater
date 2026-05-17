@@ -275,11 +275,15 @@ test("creates, edits, and deletes an event", async ({ page }) => {
 
   await expect(page).toHaveURL(/\/admin\/events\/.+/, { timeout: 20_000 });
   await expect(page.getByRole("heading", { name: "E2E Summer Gala" })).toBeVisible();
+  await expect(page.locator('input[name="startsAt"]')).toHaveValue("2026-07-10T19:00");
+  await expect(page.locator('input[name="endsAt"]')).toHaveValue("2026-07-10T21:30");
 
   await page.locator('textarea[name="summary"]').fill("Updated gala summary");
   await page.getByRole("button", { name: "Save Event" }).click();
 
   await expect(page).toHaveURL(/\/admin\/events\/.+/, { timeout: 20_000 });
+  await expect(page.locator('input[name="startsAt"]')).toHaveValue("2026-07-10T19:00");
+  await expect(page.locator('input[name="endsAt"]')).toHaveValue("2026-07-10T21:30");
   await expect(page.locator('textarea[name="summary"]')).toHaveValue(
     "Updated gala summary"
   );
