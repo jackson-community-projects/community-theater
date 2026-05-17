@@ -83,6 +83,8 @@ type PublicAmplifyVenueItemAvailability = Awaited<
   ReturnType<typeof listPublicVenueItemAvailabilityFromAmplify>
 >["data"][number];
 
+const PUBLIC_EVENT_TIME_ZONE = "America/Chicago";
+
 function sortTheatersByOrder<TheaterRecord extends { sortOrder: number; name: string }>(
   theaters: TheaterRecord[]
 ) {
@@ -464,6 +466,7 @@ function toPublicEventDateLabel(value: string) {
     year: "numeric",
     hour: "numeric",
     minute: "2-digit",
+    timeZone: PUBLIC_EVENT_TIME_ZONE,
   }).format(date);
 }
 

@@ -16,6 +16,13 @@ vi.mock("@/lib/amplify/public-server", () => ({
 }));
 
 import { getComingSoonMovies } from "@/lib/data";
+import {
+  listPublicEventsFromAmplify,
+  listPublicScreensFromAmplify,
+  listPublicTheatersFromAmplify,
+  resolvePublicStorageUrl,
+} from "@/lib/amplify/public-server";
+import { getEvents } from "@/lib/data";
 
 function createMovieRecord(overrides: Record<string, unknown> = {}) {
   return {
@@ -93,5 +100,72 @@ describe("getComingSoonMovies", () => {
       "future-release",
       "flagged-coming-soon",
     ]);
+  });
+});
+
+describe("getEvents", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-05-08T12:00:00Z"));
+    vi.mocked(listPublicEventsFromAmplify).mockReset();
+    vi.mocked(listPublicScreensFromAmplify).mockReset();
+    vi.mocked(listPublicTheatersFromAmplify).mockReset();
+    vi.mocked(resolvePublicStorageUrl).mockReset();
+  });
+
+  it("formats public event times in America/Chicago instead of server UTC", async () => {
+    vi.mocked(listPublicEventsFromAmplify).mockResolvedValue({
+      data: [
+        {
+          id: "event-1",
+          slug: "summer-gala",
+          theaterId: "theater-1",
+          title: "Summer Gala",
+          summary: "An evening event.",
+          description: "An evening event.",
+          image: null,
+          status: "published",
+          startsAt: "2026-07-11T00:30:00.000Z",
+          endsAt: "2026-07-11T01:00:00.000Z",
+          createdAt: "2026-05-01T00:00:00.000Z",
+          updatedAt: "2026-05-01T00:00:00.000Z",
+        },
+      ],
+      errors: undefined,
+    });
+    vi.mocked(listPublicTheatersFromAmplify).mockResolvedValue({
+      data: [
+        {
+          id: "theater-1",
+          sortOrder: 1,
+          slug: "jackson",
+          name: "Jackson Theater",
+          city: "Jackson",
+          state: "MN",
+          district: "Downtown",
+          established: 1928,
+          status: "active",
+          address: "1248 North Main Street",
+          phone: null,
+          contactEmail: null,
+          manager: null,
+          heroImage: null,
+          descriptionParagraphs: null,
+          createdAt: "2026-05-01T00:00:00.000Z",
+          updatedAt: "2026-05-01T00:00:00.000Z",
+        },
+      ],
+      errors: undefined,
+    });
+    vi.mocked(listPublicScreensFromAmplify).mockResolvedValue({
+      data: [],
+      errors: undefined,
+    });
+    vi.mocked(resolvePublicStorageUrl).mockResolvedValue(null);
+
+    const [event] = await getEvents();
+
+    expect(event.startsAtLabel).toBe("Jul 10, 2026, 7:30 PM");
+    expect(event.endsAtLabel).toBe("Jul 10, 2026, 8:00 PM");
   });
 });
