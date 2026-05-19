@@ -296,6 +296,33 @@ function isActivePublishedBooking(booking: Booking, todayIso = getTodayIsoDate()
   );
 }
 
+function compareBookingsByStartDate(left: Booking, right: Booking) {
+  return left.runStartsOn.localeCompare(right.runStartsOn);
+}
+
+function getHomepageFeaturedBookingIds(
+  bookings: Booking[],
+  todayIso = getTodayIsoDate()
+): string[] {
+  const publishedBookings = bookings
+    .filter((booking) => booking.status === "published")
+    .sort(compareBookingsByStartDate);
+  const nextUpcomingIndex = publishedBookings.findIndex(
+    (booking) => booking.runEndsOn >= todayIso
+  );
+  const orderedBookings =
+    nextUpcomingIndex >= 0
+      ? publishedBookings.slice(nextUpcomingIndex)
+      : [...publishedBookings].sort((left, right) =>
+          right.runEndsOn.localeCompare(left.runEndsOn) ||
+          right.runStartsOn.localeCompare(left.runStartsOn)
+        );
+
+  return Array.from(
+    new Set(orderedBookings.map((booking) => booking.movieSlug))
+  );
+}
+
 function toSiteMovie(movie: PublicAmplifyMovie): Movie {
   const fallback = movies.find(
     (siteMovie) => siteMovie.slug === movie.slug || siteMovie.tmdbId === movie.tmdbId
@@ -639,6 +666,20 @@ export async function getNowPlayingMovies(): Promise<Movie[]> {
   );
 
   return publicMovies.filter((movie) => activeMovieSlugs.has(movie.slug));
+}
+
+export async function getHomepageFeaturedMovies(): Promise<Movie[]> {
+  const [publicMovies, publicBookings] = await Promise.all([
+    getPublicMoviesFromAmplify(),
+    getPublicBookingsFromAmplify(),
+  ]);
+  const movieBySlug = Object.fromEntries(
+    publicMovies.map((movie) => [movie.slug, movie])
+  );
+
+  return getHomepageFeaturedBookingIds(publicBookings)
+    .map((movieSlug) => movieBySlug[movieSlug])
+    .filter((movie): movie is Movie => Boolean(movie));
 }
 
 export async function getComingSoonMovies(): Promise<Movie[]> {

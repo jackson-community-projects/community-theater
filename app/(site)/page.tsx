@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getNowPlayingMovies, getComingSoonMovies, getTheaters } from "@/lib/data";
+import {
+  getComingSoonMovies,
+  getHomepageFeaturedMovies,
+  getTheaters,
+} from "@/lib/data";
 import { APP_NAME } from "@/lib/config";
 
 export const metadata: Metadata = {
@@ -19,13 +23,13 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [nowPlaying, comingSoon, theaters] = await Promise.all([
-    getNowPlayingMovies(),
+  const [homepageFeaturedMovies, comingSoon, theaters] = await Promise.all([
+    getHomepageFeaturedMovies(),
     getComingSoonMovies(),
     getTheaters(),
   ]);
 
-  const [featured, secondary] = nowPlaying;
+  const [featured, secondary] = homepageFeaturedMovies;
 
   return (
     <div className="bg-[#131313] text-[#e5e2e1]">

@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { listPublicMoviesFromAmplify } = vi.hoisted(() => ({
+const { listPublicBookingsFromAmplify, listPublicMoviesFromAmplify } = vi.hoisted(() => ({
+  listPublicBookingsFromAmplify: vi.fn(),
   listPublicMoviesFromAmplify: vi.fn(),
 }));
 
 vi.mock("@/lib/amplify/public-server", () => ({
-  listPublicBookingsFromAmplify: vi.fn(),
+  listPublicBookingsFromAmplify,
   listPublicEventsFromAmplify: vi.fn(),
   listPublicMoviesFromAmplify,
   listPublicScreensFromAmplify: vi.fn(),
@@ -15,7 +16,7 @@ vi.mock("@/lib/amplify/public-server", () => ({
   resolvePublicStorageUrl: vi.fn(),
 }));
 
-import { getComingSoonMovies } from "@/lib/data";
+import { getComingSoonMovies, getHomepageFeaturedMovies } from "@/lib/data";
 import {
   listPublicEventsFromAmplify,
   listPublicScreensFromAmplify,
@@ -54,10 +55,31 @@ function createMovieRecord(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function createBookingRecord(overrides: Record<string, unknown> = {}) {
+  return {
+    id: `booking-${Math.random().toString(36).slice(2)}`,
+    slug: "sample-booking",
+    theaterId: "theater-1",
+    screenId: "screen-1",
+    movieId: "movie-1",
+    runStartsOn: "2026-05-01",
+    runEndsOn: "2026-05-07",
+    status: "published",
+    ticketPrice: null,
+    badge: null,
+    showtimes: [],
+    exceptions: [],
+    createdAt: "2026-05-01T00:00:00.000Z",
+    updatedAt: "2026-05-01T00:00:00.000Z",
+    ...overrides,
+  };
+}
+
 describe("getComingSoonMovies", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-05-08T12:00:00Z"));
+    listPublicBookingsFromAmplify.mockReset();
     listPublicMoviesFromAmplify.mockReset();
   });
 
@@ -100,6 +122,107 @@ describe("getComingSoonMovies", () => {
       "future-release",
       "flagged-coming-soon",
     ]);
+  });
+});
+
+describe("getHomepageFeaturedMovies", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-05-18T12:00:00Z"));
+    listPublicBookingsFromAmplify.mockReset();
+    listPublicMoviesFromAmplify.mockReset();
+  });
+
+  it("prefers the next booked movie and falls back to the most recent past booking", async () => {
+    listPublicMoviesFromAmplify.mockResolvedValue({
+      data: [
+        createMovieRecord({
+          id: "movie-past",
+          slug: "past-movie",
+          title: "Past Movie",
+        }),
+        createMovieRecord({
+          id: "movie-next",
+          slug: "next-movie",
+          title: "Next Movie",
+        }),
+        createMovieRecord({
+          id: "movie-later",
+          slug: "later-movie",
+          title: "Later Movie",
+        }),
+      ],
+      errors: undefined,
+    });
+    listPublicBookingsFromAmplify.mockResolvedValue({
+      data: [
+        createBookingRecord({
+          id: "booking-past",
+          movieId: "movie-past",
+          runStartsOn: "2026-05-01",
+          runEndsOn: "2026-05-10",
+        }),
+        createBookingRecord({
+          id: "booking-next",
+          movieId: "movie-next",
+          runStartsOn: "2026-05-20",
+          runEndsOn: "2026-05-27",
+        }),
+        createBookingRecord({
+          id: "booking-later",
+          movieId: "movie-later",
+          runStartsOn: "2026-06-01",
+          runEndsOn: "2026-06-07",
+        }),
+      ],
+      errors: undefined,
+    });
+
+    const movies = await getHomepageFeaturedMovies();
+
+    expect(movies.map((movie) => movie.slug)).toEqual([
+      "next-movie",
+      "later-movie",
+    ]);
+  });
+
+  it("uses the most recent past booking when there are no current or future bookings", async () => {
+    listPublicMoviesFromAmplify.mockResolvedValue({
+      data: [
+        createMovieRecord({
+          id: "movie-earlier",
+          slug: "earlier-movie",
+          title: "Earlier Movie",
+        }),
+        createMovieRecord({
+          id: "movie-latest",
+          slug: "latest-movie",
+          title: "Latest Movie",
+        }),
+      ],
+      errors: undefined,
+    });
+    listPublicBookingsFromAmplify.mockResolvedValue({
+      data: [
+        createBookingRecord({
+          id: "booking-earlier",
+          movieId: "movie-earlier",
+          runStartsOn: "2026-04-01",
+          runEndsOn: "2026-04-07",
+        }),
+        createBookingRecord({
+          id: "booking-latest",
+          movieId: "movie-latest",
+          runStartsOn: "2026-05-01",
+          runEndsOn: "2026-05-12",
+        }),
+      ],
+      errors: undefined,
+    });
+
+    const movies = await getHomepageFeaturedMovies();
+
+    expect(movies.map((movie) => movie.slug)).toEqual(["latest-movie", "earlier-movie"]);
   });
 });
 
